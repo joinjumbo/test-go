@@ -1,4 +1,4 @@
-name: Build and Push to ECR
+name: Deploy Go Binary to Lambda
 
 on:
   push:
@@ -6,35 +6,32 @@ on:
       - main
 
 jobs:
-  build-and-push:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build Go binary
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+          zip function.zip bootstrap config.json config_*.json
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ap-south-1
 
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build Docker image
+      - name: Deploy to Lambda
         run: |
-          docker buildx build \
-            --platform linux/amd64 \
-            -t ${{ secrets.ECR_REPOSITORY }}:latest .
-
-      - name: Tag Docker image
-        run: |
-          docker tag ${{ secrets.ECR_REPOSITORY }}:latest \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
-
-      - name: Push Docker image to ECR
-        run: |
-          docker push \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
+          aws lambda update-function-code \
+            --function-name test-go-lambda \
+            --zip-file fileb://function.zip

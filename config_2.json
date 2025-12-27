@@ -1,0 +1,31 @@
+{
+    "database": {
+        "host": "host-2",
+        "port": 5432,
+        "username": "admin",
+        "password": "very-secure-password",
+        "max_connections": 100,
+        "timeout": 30
+    },
+    "features": {
+        "enable_feature_x": false,
+        "enable_feature_y": false,
+        "beta_users": [
+            "user1",
+            "user2"
+        ]
+    },
+    "logging": {
+        "level": "debug",
+        "format": "json",
+        "output": "stdout"
+    },
+    "services": [
+        {
+            "name": "service-a",
+            "url": "http://service-a",
+            "retries": 3
+        }
+    ],
+    "large_data": "Lorem ipsum dolor sit amet."
+}

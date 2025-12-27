@@ -1,0 +1,22 @@
+{
+    "database": {
+        "host": "host-4",
+        "port": 5432,
+        "username": "admin",
+        "password": "very-secure-password",
+        "max_connections": 100,
+        "timeout": 30
+    },
+    "features": {
+        "enable_feature_x": true,
+        "enable_feature_y": true,
+        "beta_users": []
+    },
+    "logging": {
+        "level": "error",
+        "format": "json",
+        "output": "stdout"
+    },
+    "services": [],
+    "large_data": ""
+}

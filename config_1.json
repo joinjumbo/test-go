@@ -1,0 +1,49 @@
+{
+    "database": {
+        "host": "host-1",
+        "port": 5432,
+        "username": "admin",
+        "password": "very-secure-password",
+        "max_connections": 100,
+        "timeout": 30
+    },
+    "features": {
+        "enable_feature_x": true,
+        "enable_feature_y": false,
+        "beta_users": [
+            "user1",
+            "user2",
+            "user3",
+            "user4",
+            "user5",
+            "user6",
+            "user7",
+            "user8",
+            "user9",
+            "user10"
+        ]
+    },
+    "logging": {
+        "level": "debug",
+        "format": "json",
+        "output": "stdout"
+    },
+    "services": [
+        {
+            "name": "service-a",
+            "url": "http://service-a",
+            "retries": 3
+        },
+        {
+            "name": "service-b",
+            "url": "http://service-b",
+            "retries": 5
+        },
+        {
+            "name": "service-c",
+            "url": "http://service-c",
+            "retries": 2
+        }
+    ],
+    "large_data": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+}
