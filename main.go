@@ -120,7 +120,7 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			return handleGetHello(request)
 		}
 	}
-
+	fmt.Printf("Not Found: %+v\n", request)
 	return events.APIGatewayProxyResponse{
 		Body:       `{"error": "Not Found"}`,
 		StatusCode: http.StatusNotFound,
