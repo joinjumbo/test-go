@@ -104,7 +104,7 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	}
 
 	fmt.Printf("Processing request %s %s\n", request.HTTPMethod, request.Path)
-
+	fmt.Printf("Request: %+v\n", request)
 	// Routing based on Path and Method
 	switch request.Path {
 	case "/config":
