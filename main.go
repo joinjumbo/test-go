@@ -92,7 +92,7 @@ type Response struct {
 	Message string `json:"message"`
 }
 
-func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func HandleRequest(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	reqStart := time.Now()
 	defer func() {
 		fmt.Printf("Request completed in %v\n", time.Since(reqStart))
@@ -103,59 +103,63 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		coldStart = false
 	}
 
-	fmt.Printf("Processing request %s %s\n", request.HTTPMethod, request.Path)
+	// Extract path and method from v2 request
+	path := request.RawPath
+	method := request.RequestContext.HTTP.Method
+
+	fmt.Printf("Processing request %s %s\n", method, path)
 	fmt.Printf("Request: %+v\n", request)
-	fmt.Printf("Request path: %+v\n", request.Path)
-	fmt.Printf("Request method: %+v\n", request.HTTPMethod)
+	fmt.Printf("Request path: %+v\n", path)
+	fmt.Printf("Request method: %+v\n", method)
 	// Routing based on Path and Method
-	switch request.Path {
+	switch path {
 	case "/config":
-		if request.HTTPMethod == "GET" {
+		if method == "GET" {
 			return handleGetConfig(request)
 		}
 	case "/echo":
-		if request.HTTPMethod == "POST" {
+		if method == "POST" {
 			return handlePostEcho(request)
 		}
 	case "/hello":
-		if request.HTTPMethod == "GET" {
+		if method == "GET" {
 			return handleGetHello(request)
 		}
 	}
 	fmt.Printf("Not Found: %+v\n", request)
-	return events.APIGatewayProxyResponse{
+	return events.APIGatewayV2HTTPResponse{
 		Body:       `{"error": "Not Found"}`,
 		StatusCode: http.StatusNotFound,
 	}, nil
 }
 
-func handleGetHello(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	msg := fmt.Sprintf("Hello from GET! Path: %s", request.Path)
-	return events.APIGatewayProxyResponse{Body: msg, StatusCode: http.StatusOK}, nil
+func handleGetHello(request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	msg := fmt.Sprintf("Hello from GET! Path: %s", request.RawPath)
+	return events.APIGatewayV2HTTPResponse{Body: msg, StatusCode: http.StatusOK}, nil
 }
 
-func handleGetConfig(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handleGetConfig(request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	if len(globalConfigs) == 0 {
-		return events.APIGatewayProxyResponse{Body: `{"error": "No configurations loaded"}`, StatusCode: http.StatusInternalServerError}, nil
+		return events.APIGatewayV2HTTPResponse{Body: `{"error": "No configurations loaded"}`, StatusCode: http.StatusInternalServerError}, nil
 	}
 
 	body, err := json.Marshal(globalConfigs)
 	if err != nil {
-		return events.APIGatewayProxyResponse{Body: `{"error": "Failed to marshal config"}`, StatusCode: http.StatusInternalServerError}, nil
+		return events.APIGatewayV2HTTPResponse{Body: `{"error": "Failed to marshal config"}`, StatusCode: http.StatusInternalServerError}, nil
 	}
 
-	return events.APIGatewayProxyResponse{
+	return events.APIGatewayV2HTTPResponse{
 		Body:       string(body),
 		StatusCode: http.StatusOK,
 		Headers:    map[string]string{"Content-Type": "application/json"},
 	}, nil
 }
 
-func handlePostEcho(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handlePostEcho(request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	var event MyEvent
 	err := json.Unmarshal([]byte(request.Body), &event)
 	if err != nil {
-		return events.APIGatewayProxyResponse{Body: "Invalid Request Body", StatusCode: http.StatusBadRequest}, nil
+		return events.APIGatewayV2HTTPResponse{Body: "Invalid Request Body", StatusCode: http.StatusBadRequest}, nil
 	}
 
 	res := Response{
@@ -164,10 +168,10 @@ func handlePostEcho(request events.APIGatewayProxyRequest) (events.APIGatewayPro
 
 	body, err := json.Marshal(res)
 	if err != nil {
-		return events.APIGatewayProxyResponse{Body: "Internal Server Error", StatusCode: http.StatusInternalServerError}, nil
+		return events.APIGatewayV2HTTPResponse{Body: "Internal Server Error", StatusCode: http.StatusInternalServerError}, nil
 	}
 
-	return events.APIGatewayProxyResponse{
+	return events.APIGatewayV2HTTPResponse{
 		Body:       string(body),
 		StatusCode: http.StatusOK,
 		Headers:    map[string]string{"Content-Type": "application/json"},
